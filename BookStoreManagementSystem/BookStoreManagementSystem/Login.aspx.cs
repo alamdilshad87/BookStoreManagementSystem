@@ -14,11 +14,7 @@ namespace BookStoreManagementSystem
                 var user = db.Users
                     .FirstOrDefault(u => u.Email == txtEmail.Text);
 
-                if (user == null ||
-                    !PasswordHelper.Verify(
-                        txtPassword.Text,
-                        user.PasswordHash,
-                        user.PasswordSalt))
+                if (user == null || !PasswordHelper.Verify(txtPassword.Text,user.PasswordHash,user.PasswordSalt))
                 {
                     lblMessage.Text = "Invalid email or password";
                     return;
@@ -26,6 +22,7 @@ namespace BookStoreManagementSystem
 
                 Session["UserId"] = user.UserId;
                 Session["UserName"] = user.FullName;
+                Session["IsAdmin"] = user.IsAdmin;
 
                 Response.Redirect("Dashboard.aspx");
             }

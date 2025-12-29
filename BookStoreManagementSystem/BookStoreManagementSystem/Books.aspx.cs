@@ -30,16 +30,47 @@ namespace BookStoreManagementSystem
 
             using (var db = new BookStoreContext())
             {
-                if (e.CommandName == "Cart")
+                var existingItem = db.Carts
+                    .FirstOrDefault(c => c.UserId == userId && c.BookId == bookId);
+
+                if (existingItem != null)
                 {
-                    db.Carts.Add(new Cart { BookId = bookId, UserId = userId, Quantity = 1 });
+                    existingItem.Quantity += 1;
                 }
-                else if (e.CommandName == "Wish")
+                else
                 {
-                    if (!db.Wishlists.Any(w => w.BookId == bookId && w.UserId == userId))
-                        db.Wishlists.Add(new Wishlist { BookId = bookId, UserId = userId });
+                    db.Carts.Add(new Cart
+                    {
+                        UserId = userId,
+                        BookId = bookId,
+                        Quantity = 1
+                    });
                 }
+
                 db.SaveChanges();
+            }
+            using (var db = new BookStoreContext())
+            {
+                if (e.CommandName == "Wish")
+                {
+                    var wishItem = db.Wishlists
+                        .FirstOrDefault(w => w.UserId == userId && w.BookId == bookId);
+
+                    if (wishItem != null)
+                    {
+                        db.Wishlists.Remove(wishItem);
+                    }
+                    else
+                    {
+                        db.Wishlists.Add(new Wishlist
+                        {
+                            UserId = userId,
+                            BookId = bookId
+                        });
+                    }
+                    db.SaveChanges();
+                }
+
             }
         }
     }

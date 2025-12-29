@@ -6,7 +6,7 @@
 
 <asp:Content ContentPlaceHolderID="MainContent" runat="server">
 
-<h3>Available Books</h3>
+<h3>📚 Available Books</h3>
 
 <asp:GridView ID="gvBooks" runat="server"
     CssClass="table table-striped"
@@ -17,17 +17,32 @@
     <Columns>
         <asp:BoundField DataField="Title" HeaderText="Title" />
         <asp:BoundField DataField="Author" HeaderText="Author" />
-        <asp:BoundField DataField="Price" HeaderText="Price" />
+        <asp:BoundField DataField="Price" HeaderText="Price (₹)" />
 
-        <asp:ButtonField Text="Add to Cart"
-            CommandName="Cart"
-            ControlStyle-CssClass="btn btn-sm btn-primary" />
+        <asp:TemplateField>
+            <ItemTemplate>
+                <asp:Button runat="server"
+                    Text="Add to Cart"
+                    CssClass="btn btn-sm btn-primary"
+                    CommandName="Cart"
+                    CommandArgument="<%# Container.DataItemIndex %>" />
+            </ItemTemplate>
+        </asp:TemplateField>
 
-        <asp:ButtonField Text="Wishlist ❤️"
-            CommandName="Wish"
-            ControlStyle-CssClass="btn btn-sm btn-outline-danger" />
+        <asp:TemplateField>
+            <ItemTemplate>
+                <asp:Button runat="server"
+                    Text="❤️ Wishlist"
+                    CssClass="btn btn-sm btn-outline-danger"
+                    CommandName="Wish"
+                    CommandArgument="<%# Container.DataItemIndex %>" />
+            </ItemTemplate>
+        </asp:TemplateField>
+
     </Columns>
-
 </asp:GridView>
+
+
+
 
 </asp:Content>

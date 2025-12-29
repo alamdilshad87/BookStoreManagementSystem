@@ -11,25 +11,16 @@ namespace BookStoreManagementSystem
 {
 
 
-    public partial class Dashboard
+    public partial class MyWishlist
     {
 
         /// <summary>
-        /// lblUser control.
+        /// gvWishlist control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.Label lblUser;
-
-        /// <summary>
-        /// pnlAdmin control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.Panel pnlAdmin;
+        protected global::System.Web.UI.WebControls.GridView gvWishlist;
     }
 }
