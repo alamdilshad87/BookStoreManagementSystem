@@ -1,7 +1,8 @@
-﻿using System;
-using System.Linq;
-using BookStoreManagementSystem.Data;
+﻿using BookStoreManagementSystem.Data;
 using BookStoreManagementSystem.Helpers;
+using System;
+using System.Linq;
+using System.Web;
 
 namespace BookStoreManagementSystem
 {
@@ -14,16 +15,29 @@ namespace BookStoreManagementSystem
                 var user = db.Users
                     .FirstOrDefault(u => u.Email == txtEmail.Text);
 
-                if (user == null || !PasswordHelper.Verify(txtPassword.Text,user.PasswordHash,user.PasswordSalt))
+                if (user == null ||
+                    !PasswordHelper.Verify(
+                        txtPassword.Text,
+                        user.PasswordHash,
+                        user.PasswordSalt))
                 {
                     lblMessage.Text = "Invalid email or password";
                     return;
                 }
 
-                Session["UserId"] = user.UserId;
-                Session["UserName"] = user.FullName;
-                Session["IsAdmin"] = user.IsAdmin;
+                string token = JwtHelper.GenerateToken(
+                    user.UserId,
+                    user.Email,
+                    user.IsAdmin);
 
+                HttpCookie jwtCookie =
+                    new HttpCookie("JWT_TOKEN", token)
+                    {
+                        HttpOnly = true,
+                        Expires = DateTime.Now.AddHours(1)
+                    };
+
+                Response.Cookies.Add(jwtCookie);
                 Response.Redirect("Dashboard.aspx");
             }
         }

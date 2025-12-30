@@ -10,24 +10,45 @@ namespace BookStoreManagementSystem
     {
         protected void Register_Click(object sender, EventArgs e)
         {
+            string name = txtName.Text.Trim();
+            string email = txtEmail.Text.Trim();
+            string password = txtPassword.Text;
+
+            // 🔐 Basic validation
+            if (string.IsNullOrWhiteSpace(name) ||
+                string.IsNullOrWhiteSpace(email) ||
+                string.IsNullOrWhiteSpace(password))
+            {
+                lblMessage.Text = "All fields are required.";
+                return;
+            }
+
+            if (password.Length < 6)
+            {
+                lblMessage.Text =
+                    "Password must be at least 6 characters.";
+                return;
+            }
+
             byte[] hash, salt;
-            PasswordHelper.CreateHash(txtPassword.Text, out hash, out salt);
+            PasswordHelper.CreateHash(password, out hash, out salt);
 
             using (var db = new BookStoreContext())
             {
-                if (db.Users.Any(u => u.Email == txtEmail.Text))
+                if (db.Users.Any(u => u.Email == email))
                 {
-                    lblMessage.Text = "Email already registered";
+                    lblMessage.Text = "Email already registered.";
                     return;
                 }
 
                 db.Users.Add(new User
                 {
-                    FullName = txtName.Text,
-                    Email = txtEmail.Text,
+                    FullName = name,
+                    Email = email,
                     PasswordHash = hash,
                     PasswordSalt = salt,
-                    CreatedAt = DateTime.Now
+                    CreatedAt = DateTime.Now,
+                    IsAdmin = false
                 });
 
                 db.SaveChanges();

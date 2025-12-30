@@ -1,26 +1,19 @@
-﻿using System;
-using BookStoreManagementSystem.Data;
+﻿using BookStoreManagementSystem.Helpers;
+using System;
+using System.Security.Claims;
 
 namespace BookStoreManagementSystem
 {
-    public partial class Dashboard : System.Web.UI.Page
+    public partial class Dashboard : BasePage
     {
         protected void Page_Load(object sender, EventArgs e)
         {
-            if (Session["UserId"] == null)
-                Response.Redirect("Login.aspx");
+            var identity = (ClaimsIdentity)Context.User.Identity;
+            lblUser.Text = identity.FindFirst(ClaimTypes.Email)?.Value;
 
-            lblUser.Text = Session["UserName"].ToString();
-
-            using (var db = new BookStoreContext())
+            if (User.IsInRole("Admin"))
             {
-                int userId = (int)Session["UserId"];
-                var user = db.Users.Find(userId);
-
-                if (user != null && user.IsAdmin)
-                {
-                    pnlAdmin.Visible = true;
-                }
+                pnlAdmin.Visible = true;
             }
         }
     }

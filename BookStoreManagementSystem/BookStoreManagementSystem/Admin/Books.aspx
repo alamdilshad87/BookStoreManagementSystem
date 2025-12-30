@@ -8,24 +8,57 @@
 
 <h3 class="mb-4">📚 Manage Books</h3>
 
-<!-- ADD BOOK -->
+<asp:Label ID="lblMessage" runat="server"
+    CssClass="text-danger fw-semibold mb-3 d-block" />
+
+<asp:ValidationSummary runat="server"
+    CssClass="text-danger mb-3" />
+
 <div class="card mb-4 shadow-sm">
     <div class="card-body">
         <h5>Add New Book</h5>
 
         <div class="row g-2">
+
             <div class="col-md-4">
                 <asp:TextBox ID="txtTitle" runat="server"
-                    CssClass="form-control" Placeholder="Title" />
+                    CssClass="form-control"
+                    Placeholder="Title" />
+                <asp:RequiredFieldValidator
+                    ControlToValidate="txtTitle"
+                    ErrorMessage="Title is required"
+                    CssClass="text-danger"
+                    runat="server" />
             </div>
+
             <div class="col-md-3">
                 <asp:TextBox ID="txtAuthor" runat="server"
-                    CssClass="form-control" Placeholder="Author" />
+                    CssClass="form-control"
+                    Placeholder="Author" />
+                <asp:RequiredFieldValidator
+                    ControlToValidate="txtAuthor"
+                    ErrorMessage="Author is required"
+                    CssClass="text-danger"
+                    runat="server" />
             </div>
+
             <div class="col-md-2">
                 <asp:TextBox ID="txtPrice" runat="server"
-                    CssClass="form-control" Placeholder="Price" />
+                    CssClass="form-control"
+                    Placeholder="Price" />
+                <asp:RequiredFieldValidator
+                    ControlToValidate="txtPrice"
+                    ErrorMessage="Price is required"
+                    CssClass="text-danger"
+                    runat="server" />
+                <asp:RegularExpressionValidator
+                    ControlToValidate="txtPrice"
+                    ValidationExpression="^\d+(\.\d{1,2})?$"
+                    ErrorMessage="Enter valid price"
+                    CssClass="text-danger"
+                    runat="server" />
             </div>
+
             <div class="col-md-3">
                 <asp:Button ID="btnAdd"
                     runat="server"
@@ -33,6 +66,7 @@
                     CssClass="btn btn-success w-100"
                     OnClick="btnAdd_Click" />
             </div>
+
         </div>
     </div>
 </div>
@@ -52,7 +86,9 @@
     <Columns>
         <asp:BoundField DataField="Title" HeaderText="Title" />
         <asp:BoundField DataField="Author" HeaderText="Author" />
-        <asp:BoundField DataField="Price" HeaderText="Price" />
+        <asp:BoundField DataField="Price"
+            HeaderText="Price (₹)"
+            DataFormatString="{0:N2}" />
     </Columns>
 
 </asp:GridView>
