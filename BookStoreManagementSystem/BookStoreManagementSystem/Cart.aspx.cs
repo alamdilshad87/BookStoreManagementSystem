@@ -3,6 +3,7 @@ using BookStoreManagementSystem.Helpers;
 using BookStoreManagementSystem.Models;
 using System;
 using System.Data.Entity;
+using System.Data.Entity.Core.Metadata.Edm;
 using System.Linq;
 using System.Security.Claims;
 
@@ -77,10 +78,13 @@ namespace BookStoreManagementSystem
             int userId = GetUserIdFromJwt();
 
             using (var db = new BookStoreContext())
-            using (var tx = db.Database.BeginTransaction())
             {
+                DbContextTransaction tx = null;
+
                 try
                 {
+                    tx = db.Database.BeginTransaction();
+
                     var cartItems = db.Carts
                         .Include(c => c.Book)
                         .Where(c => c.UserId == userId)
@@ -93,9 +97,7 @@ namespace BookStoreManagementSystem
                     {
                         UserId = userId,
                         OrderDate = DateTime.Now,
-                        TotalAmount =
-                            cartItems.Sum(
-                                c => c.Book.Price * c.Quantity)
+                        TotalAmount = cartItems.Sum(c => c.Book.Price * c.Quantity)
                     };
 
                     db.Orders.Add(order);
@@ -116,12 +118,20 @@ namespace BookStoreManagementSystem
                     db.SaveChanges();
 
                     tx.Commit();
-                    Response.Redirect("OrderSuccess.aspx");
+
+                    Response.Redirect("OrderSuccess.aspx", false);
+                    Context.ApplicationInstance.CompleteRequest();
                 }
-                catch (Exception)
+                catch (Exception ex)
                 {
-                    tx.Rollback();
-                    throw;
+                    if (tx != null)
+                    {
+                        try { tx.Rollback(); }
+                        catch { }
+                    }
+
+                    throw new ApplicationException(
+                        "Order placement failed", ex);
                 }
             }
         }
