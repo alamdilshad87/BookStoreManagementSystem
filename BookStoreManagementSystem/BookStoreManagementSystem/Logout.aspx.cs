@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Web;
 
 namespace BookStoreManagementSystem
 {
@@ -6,15 +7,19 @@ namespace BookStoreManagementSystem
     {
         protected void Page_Load(object sender, EventArgs e)
         {
-            // Clear all session data
+            if (Request.Cookies["JWT_TOKEN"] != null)
+            {
+                HttpCookie cookie = new HttpCookie("JWT_TOKEN");
+                cookie.Expires = DateTime.Now.AddDays(-1);
+                Response.Cookies.Add(cookie);
+            }
             Session.Clear();
             Session.Abandon();
 
-            // Optional: prevent back button access
-            Response.Cache.SetCacheability(System.Web.HttpCacheability.NoCache);
+            Response.Cache.SetCacheability(
+                HttpCacheability.NoCache);
             Response.Cache.SetNoStore();
 
-            // Redirect to Login
             Response.Redirect("Login.aspx");
         }
     }

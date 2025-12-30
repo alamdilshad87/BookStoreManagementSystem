@@ -1,22 +1,25 @@
-﻿using System;
-using System.Linq;
-using BookStoreManagementSystem.Data;
+﻿using BookStoreManagementSystem.Data;
+using BookStoreManagementSystem.Helpers;
 using BookStoreManagementSystem.Models;
+using System;
+using System.Linq;
+using System.Security.Claims;
+using System.Web.UI.WebControls;
 
 namespace BookStoreManagementSystem.Admin
 {
-    public partial class Books : System.Web.UI.Page
+    public partial class Books : BasePage
     {
         protected void Page_Load(object sender, EventArgs e)
         {
-            // 🔒 ADMIN CHECK
-            if (Session["UserId"] == null || Session["IsAdmin"] == null || !(bool)Session["IsAdmin"])
-                Response.Redirect("~/Login.aspx");
+            if (!User.IsInRole("Admin"))
+            {
+                Response.Redirect("~/Dashboard.aspx");
+                return;
+            }
 
             if (!IsPostBack)
-            {
                 LoadBooks();
-            }
         }
 
         private void LoadBooks()
@@ -28,72 +31,118 @@ namespace BookStoreManagementSystem.Admin
             }
         }
 
-        // ➕ ADD BOOK
         protected void btnAdd_Click(object sender, EventArgs e)
         {
-            using (var db = new BookStoreContext())
+            decimal price;
+            if (!decimal.TryParse(txtPrice.Text, out price))
             {
-                db.Books.Add(new Book
-                {
-                    Title = txtTitle.Text,
-                    Author = txtAuthor.Text,
-                    Price = Convert.ToDecimal(txtPrice.Text)
-                });
-                db.SaveChanges();
+                lblMessage.Text = "Invalid price format.";
+                return;
             }
 
-            txtTitle.Text = txtAuthor.Text = txtPrice.Text = "";
-            LoadBooks();
+            try
+            {
+                using (var db = new BookStoreContext())
+                {
+                    db.Books.Add(new Book
+                    {
+                        Title = txtTitle.Text.Trim(),
+                        Author = txtAuthor.Text.Trim(),
+                        Price = price
+                    });
+
+                    db.SaveChanges();
+                }
+
+                lblMessage.Text = "Book added successfully.";
+                lblMessage.CssClass = "text-success";
+
+                txtTitle.Text = txtAuthor.Text = txtPrice.Text = "";
+                LoadBooks();
+            }
+            catch (Exception)
+            {
+                lblMessage.Text = "Error while adding book.";
+            }
         }
 
-        // ✏️ EDIT
-        protected void gvBooks_RowEditing(object sender, System.Web.UI.WebControls.GridViewEditEventArgs e)
+        protected void gvBooks_RowEditing(object sender, GridViewEditEventArgs e)
         {
             gvBooks.EditIndex = e.NewEditIndex;
             LoadBooks();
         }
 
-        protected void gvBooks_RowCancelingEdit(object sender, System.Web.UI.WebControls.GridViewCancelEditEventArgs e)
+        protected void gvBooks_RowCancelingEdit(object sender, GridViewCancelEditEventArgs e)
         {
             gvBooks.EditIndex = -1;
             LoadBooks();
         }
 
-        protected void gvBooks_RowUpdating(object sender, System.Web.UI.WebControls.GridViewUpdateEventArgs e)
+        protected void gvBooks_RowUpdating(object sender, GridViewUpdateEventArgs e)
         {
             int id = (int)gvBooks.DataKeys[e.RowIndex].Value;
-            var row = gvBooks.Rows[e.RowIndex];
+            GridViewRow row = gvBooks.Rows[e.RowIndex];
 
-            string title = ((System.Web.UI.WebControls.TextBox)row.Cells[1].Controls[0]).Text;
-            string author = ((System.Web.UI.WebControls.TextBox)row.Cells[2].Controls[0]).Text;
-            decimal price = Convert.ToDecimal(((System.Web.UI.WebControls.TextBox)row.Cells[3].Controls[0]).Text);
+            string title = ((TextBox)row.Cells[1].Controls[0]).Text.Trim();
+            string author = ((TextBox)row.Cells[2].Controls[0]).Text.Trim();
+            string priceText = ((TextBox)row.Cells[3].Controls[0]).Text;
 
-            using (var db = new BookStoreContext())
+            decimal price;
+            if (!decimal.TryParse(priceText, out price))
             {
-                var book = db.Books.Find(id);
-                book.Title = title;
-                book.Author = author;
-                book.Price = price;
-                db.SaveChanges();
+                lblMessage.Text = "Invalid price.";
+                return;
             }
 
-            gvBooks.EditIndex = -1;
-            LoadBooks();
+            try
+            {
+                using (var db = new BookStoreContext())
+                {
+                    var book = db.Books.Find(id);
+                    if (book == null)
+                    {
+                        lblMessage.Text = "Book not found.";
+                        return;
+                    }
+
+                    book.Title = title;
+                    book.Author = author;
+                    book.Price = price;
+
+                    db.SaveChanges();
+                }
+
+                gvBooks.EditIndex = -1;
+                LoadBooks();
+            }
+            catch (Exception)
+            {
+                lblMessage.Text = "Error while updating book.";
+            }
         }
 
-        // ❌ DELETE
-        protected void gvBooks_RowDeleting(object sender, System.Web.UI.WebControls.GridViewDeleteEventArgs e)
+        protected void gvBooks_RowDeleting(object sender, GridViewDeleteEventArgs e)
         {
             int id = (int)gvBooks.DataKeys[e.RowIndex].Value;
 
-            using (var db = new BookStoreContext())
+            try
             {
-                var book = db.Books.Find(id);
-                db.Books.Remove(book);
-                db.SaveChanges();
-            }
+                using (var db = new BookStoreContext())
+                {
+                    var book = db.Books.Find(id);
+                    if (book != null)
+                    {
+                        db.Books.Remove(book);
+                        db.SaveChanges();
+                    }
+                }
 
-            LoadBooks();
+                LoadBooks();
+            }
+            catch (Exception)
+            {
+                lblMessage.Text = "Error while deleting book.";
+            }
         }
     }
 }
