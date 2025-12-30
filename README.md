@@ -5,6 +5,69 @@ A full-stack e-commerce web application built with ASP.NET Web Forms and Entity 
 ## Overview
 
 This project demonstrates a complete end-to-end web application with clean separation of concerns, secure authentication, practical database modeling, and role-based access control. It covers real-world e-commerce workflows including user registration, product browsing, cart management, wishlist functionality, and order processing.
+## 🔐 Authentication Enhancements
+
+### JWT-Based Authentication
+- Implemented **JWT (JSON Web Token)** authentication without OWIN
+- JWT is generated on successful login
+- Token is stored securely in an **HttpOnly cookie**
+- JWT contains:
+  - UserId
+  - Email
+  - Role (User / Admin)
+- Token validation is handled centrally using a custom `BasePage`
+- Role-based authorization is enforced using JWT claims (Admin/User)
+
+---
+
+## 🔄 Order Placement Improvements
+
+### Transaction-Safe Order Processing
+- Order placement is wrapped inside a **database transaction**
+- The following operations execute atomically:
+  - Order creation
+  - Order items insertion
+  - Cart cleanup
+- If any step fails, the transaction is **rolled back**
+- Ensures data consistency and prevents partial or corrupted orders
+
+---
+
+## ✅ Validation Enhancements
+
+### Input Validation
+- Numeric fields (Price, Quantity) are validated using `TryParse`
+- Prevents runtime conversion errors
+- Empty cart validation before placing orders
+- Defensive null checks applied across pages
+
+---
+
+## 🚨 Exception Handling
+
+### Robust Error Handling
+- Critical operations wrapped inside `try-catch` blocks
+- Safe transaction rollback on failure
+- Application-level exceptions thrown where required
+- Prevents application crashes during unexpected failures
+
+---
+
+## 🧑‍💻 Registration Improvements
+
+### Duplicate User Validation
+- Duplicate email validation implemented during registration
+- Prevents multiple accounts using the same email
+- User-friendly error message shown on duplicate entry
+
+---
+
+## 🔒 Security Improvements
+
+- Passwords are hashed using **PBKDF2 (Rfc2898DeriveBytes)**
+- Salt generated per user
+- Passwords are never stored in plain text
+- JWT cookies marked as **HttpOnly**
 
 ## Features
 
